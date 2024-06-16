@@ -3,7 +3,7 @@ import { Image, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import styles from '../../onboard/styles/style';
 
-const CardCourseProgress = ({ aulas_feitas, niveis_feitos, niveis, aulas, title, image, progress, width = "100%", height = 200 }) => {
+const CardCourseProgress = ({ desafios, desafios_feitos, aulas_feitas, niveis_feitos, niveis, aulas, title, image, progress, width = "100%", height = 200 }) => {
     return (
         <TouchableOpacity>
             <View style={styles.container}>
@@ -21,6 +21,7 @@ const CardCourseProgress = ({ aulas_feitas, niveis_feitos, niveis, aulas, title,
                             <View style={{ marginVertical: "2%" }}>
                                 <Text style={stylesCard.progress}>Aulas Feitas: {aulas_feitas} / {aulas}</Text>
                                 <Text style={stylesCard.progress}>Niveis Feitos: {niveis_feitos} / {niveis}</Text>
+
                             </View>
                         </View>
 

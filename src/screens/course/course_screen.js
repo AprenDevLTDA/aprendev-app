@@ -31,7 +31,7 @@ const CourseScreen = observer(() => {
                 try {
                     setLoadingCourses(true);
 
-                    const data = await RouterApi.get('/aprendev/cursos');
+                    const data = await RouterApi.get('/aprendev/courses');
                     const cursosData = data.val() || {};
 
                     const keys = Object.keys(cursosData).map(key => ({ key }));
@@ -39,7 +39,7 @@ const CourseScreen = observer(() => {
                     CourseProgramming.setKeysCourse(keys);
                     CourseProgramming.setCursos(cursosArray);
 
-                    const matriculasQuery = query(ref(db, '/aprendev/matriculas'), orderByChild('uid'), equalTo(Cliente.uid));
+                    const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid'), equalTo(Cliente.uid));
                     const matriculasSnapshot = await get(matriculasQuery);
 
                     if (matriculasSnapshot.exists()) {
@@ -61,9 +61,11 @@ const CourseScreen = observer(() => {
     );
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={[{
+            height: "100%", backgroundColor: "#E2E8F0"
+        }]}>
             <Navbar />
-            <ScrollView>
+            <ScrollView style={{ paddingBottom: 20 }}>
                 <View>
                     <Text style={styles.title}>Meus Cursos</Text>
                 </View>
@@ -78,29 +80,42 @@ const CourseScreen = observer(() => {
                             <View key={key}>
                                 <View style={customStyles.courseContainer}>
                                     <View style={customStyles.courseTitleContainer}>
-                                        <Text style={customStyles.courseTitleText}>{element.curso}</Text>
+                                        <Text style={customStyles.courseTitleText}>{element.course}</Text>
                                         <Image source={require('../../../assets/Vector.png')} />
                                     </View>
                                 </View>
                                 <CardCourse
-                                    module={matricula?.nivel === 1 ? "open" : matricula?.nivel > 1 ? "success" : "close"}
+                                    nivel={1}
+                                    module={matricula?.level === 1 ? "open" : matricula?.level > 1 ? "success" : "close"}
                                     redirect={"Aulas"}
-                                    data_nivel={{ key_course: key, data_nivel: element.nivel_1, name_curso: element.curso, nivel: 1 }}
+                                    data_nivel={{ key_course: key, data_nivel: element.level_1, name_curso: element.course, nivel: 1 }}
                                     title={"Nivel 1"}
                                 />
                                 <CardCourse
-                                    module={matricula?.nivel === 2 ? "open" : matricula?.nivel > 2 ? "success" : "close"}
+                                    nivel={2}
+                                    module={matricula?.level === 2 ? "open" : matricula?.level > 2 ? "success" : "close"}
                                     redirect={"Aulas"}
-                                    data_nivel={{ key_course: key, data_nivel: element.nivel_2, name_curso: element.curso, nivel: 2 }}
+                                    data_nivel={{ key_course: key, data_nivel: element.level_2, name_curso: element.course, nivel: 2 }}
                                     title={"Nivel 2"}
                                 />
                                 <CardCourse
-                                    module={matricula?.nivel === 3 ? "open" : matricula?.nivel > 3 ? "success" : "close"}
+                                    nivel={3}
+                                    module={matricula?.level === 3 ? "open" : matricula?.level > 3 ? "success" : "close"}
 
                                     redirect={"Aulas"}
-                                    data_nivel={{ key_course: key, data_nivel: element.nivel_3, name_curso: element.curso, nivel: 3 }}
+                                    data_nivel={{ key_course: key, data_nivel: element.level_3, name_curso: element.course, nivel: 3 }}
                                     title={"Nivel 3"}
                                 />
+                                <View style={{ marginBottom: 20 }}>
+                                    <CardCourse
+                                        nivel={4}
+                                        module={matricula?.level === 4 ? "open" : matricula?.level > 4 ? "success" : "close"}
+
+                                        redirect={"Aulas"}
+                                        data_nivel={{ key_course: key, data_nivel: element.finalTest, name_curso: element.course, nivel: 4 }}
+                                        title={"Desafio"}
+                                    />
+                                </View>
                             </View>
                         );
                     } else {

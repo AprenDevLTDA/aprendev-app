@@ -10,24 +10,29 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 export default function PerfilButtonComponent(props) {
-    const { sourceImage, texto, children, showIcon = true, expandable = true, redirect = "" } = props;
+    const { google = false, googlePress, borderWidth = 1, borderColor = "#000", sourceImage, texto, children, showIcon = true, expandable = true, redirect = "", padding = 15, backgroundColor = '#CBD5E1' } = props;
     const [expanded, setExpanded] = useState(false);
     const navigation = useNavigation();
 
     const handlePress = () => {
         if (expandable) {
             setExpanded(!expanded);
-        } else {
+        } else if (google) {
+            googlePress();
+        }
+        else {
             navigation.navigate(redirect);
         }
     };
 
     return (
-        <View>
-            <TouchableOpacity style={styles.button} onPress={handlePress}>
+        <View style={styles.container}>
+            <TouchableOpacity style={[styles.button, { borderWidth: borderWidth, borderColor: borderColor, padding: padding, backgroundColor: backgroundColor }]} onPress={handlePress}>
                 <View style={[styles.buttonContent, !showIcon && styles.buttonContentNoIcon]}>
                     <Image source={sourceImage} style={styles.image} />
-                    <Text style={styles.buttonTitle}>{texto}</Text>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.buttonTitle}>{texto}</Text>
+                    </View>
                 </View>
                 {showIcon && (
                     <MaterialIcons name={expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={30} />
@@ -43,12 +48,12 @@ export default function PerfilButtonComponent(props) {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        alignItems: 'center',
+    },
     button: {
-        borderWidth: 1,
-        borderRadius: 10,
-        padding: 15,
+        borderRadius: 8,
         width: '90%',
-        backgroundColor: '#CBD5E1',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -61,13 +66,19 @@ const styles = StyleSheet.create({
     buttonContent: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
     },
     buttonContentNoIcon: {
-        width: '100%',
+        justifyContent: 'center',
+    },
+    textContainer: {
+        flex: 1,
+        marginLeft: 8,
     },
     buttonTitle: {
         fontSize: 20,
-        marginLeft: 8,
+        flexShrink: 1,
+        flexGrow: 1,
     },
     content: {
         padding: 15,

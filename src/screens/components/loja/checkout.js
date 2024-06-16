@@ -37,17 +37,18 @@ export default function Checkout() {
 
             if (url.includes("approved")) {
 
-                Client.setCoins(Client.coins + 300);
+                Client.setCoins(Client.coins + info.points);
                 const body = {
                     coins: Client.coins
                 }
-                await RouterApi.patch(`aprendev/clientes/${Client.uid}`, body)
+                await RouterApi.patch(`aprendev/clients/${Client.uid}`, body)
                 CourseProgramming.setModalVisible(true);
 
-                navigation.navigate('Loja')
+                navigation.navigate('LojaMercadoPagoScreen')
 
             } else {
-                navigation.navigate('Loja')
+                CourseProgramming.setModalVisibleError(true);
+                navigation.navigate('LojaMercadoPagoScreen')
             }
         }
     }
@@ -72,12 +73,12 @@ export default function Checkout() {
                 bottom: 0,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: "rgba(0,0,0,1)"
+                backgroundColor: "#0F172A"
             }}>
                 <GIFPlayer
                     style={{
-                        width: 100,
-                        height: 100,
+                        width: 150,
+                        height: 150,
                     }}
                     source={require('../../../../assets/cabeca_1.gif')}
                     resizeMode='cover'

@@ -2,6 +2,7 @@
   "expo": {
     "name": "Aprendev",
     "slug": "Aprendev",
+    "scheme": "Aprendev",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,6 +24,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ff9b7c1d-1f23-4a9d-b016-7c3dab07f0e2"
+      }
     }
   }
 }

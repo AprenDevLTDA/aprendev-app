@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Client from '../../store/cliente';
 import { observer } from 'mobx-react-lite';
+import { ImageBackground } from 'react-native';
 
 const Heart = require('../../../../assets/ion_heart-sharp.png');
 const HeartWhite = require('../../../../assets/coracao_branco.png');
@@ -65,25 +66,77 @@ const NivelOneView = observer(() => {
                                         </View>
                                     </View>
                                 </View>
-                                {data[key_nivel].descricao !== undefined ? <>
-                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[key_nivel].titulo}</Text>
-                                    <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16 }}>{data[key_nivel].descricao}</Text>
-                                </> : data[key_nivel].pergunta !== undefined ? <>
-                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[key_nivel].pergunta}</Text>
+
+
+                                {data[key_nivel].content !== undefined ? <>
+                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[key_nivel].title}</Text>
+                                    <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16 }}>{data[key_nivel].content[0]}</Text>
+                                </> : data[key_nivel].question !== undefined ? <>
+                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[key_nivel].question}</Text>
                                 </> : <></>}
-                                {data[key_nivel].arrayImagens === undefined ? <></> : <View style={{ width: "100%", borderRadius: 8 }}>
+                                {data[key_nivel].images === undefined ? <></> : <View style={{ width: "100%", borderRadius: 8 }}>
                                     <Image
-                                        source={{ uri: data[key_nivel].arrayImagens[0] }}
+                                        source={{ uri: data[key_nivel].images[0] }}
                                         style={{ width: "100%", height: 150, borderRadius: 8 }}
                                     />
                                 </View>}
-                                {data[key_nivel].topico === undefined ? <></> : <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16, marginTop: 16 }}>{data[key_nivel].topico}</Text>}
-                                {data[key_nivel].arrayImagens === undefined ? <></> : <View style={styles.containerimg}>
+                                {data[key_nivel].content === undefined ? <></> : <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16, marginTop: 16 }}>{data[key_nivel].content[1]}</Text>}
+                                {data[key_nivel].images === undefined ? <></> : <View style={styles.containerimg}>
                                     <Image
-                                        source={{ uri: data[key_nivel].arrayImagens[1] }}
+                                        source={{ uri: data[key_nivel].images[1] }}
                                         style={{ width: "100%", height: 150, borderRadius: 8 }}
                                     />
                                 </View>}
+
+                                {key_nivel === "emblem" && <View style={{ alignSelf: "center", height: 330 }}>
+                                    <ImageBackground
+                                        source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881" }}
+                                        style={{
+                                            width: 200,
+                                            height: 222,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <View
+                                            style={{
+                                                position: "absolute",
+                                                width: 175,
+                                                height: 170,
+                                                top: 155, // (222 - 150) / 2
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Image
+                                                source={{ uri: data[key_nivel] }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    resizeMode: 'contain',
+                                                }}
+                                            />
+                                            <Image
+                                                style={{
+                                                    position: 'absolute',
+                                                    width: 150,
+                                                    height: 150,
+                                                    resizeMode: 'contain',
+                                                    top: '-5%',
+                                                    left: '36%', // Ajuste conforme necessário para posicionar corretamente
+                                                    transform: [{ translateX: -50 }, { translateY: -50 }], // Centraliza a imagem dentro do View
+                                                }}
+                                                source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/M%C3%A3ozinha.png?alt=media&token=0f9da396-d416-4374-84e3-a195f7254426" }}
+                                            />
+                                        </View>
+                                    </ImageBackground>
+                                </View>}
+
+
+
+
+
+
                             </ScrollView>
                         </View>
                     </View>

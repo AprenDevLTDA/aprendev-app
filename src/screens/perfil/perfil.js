@@ -19,6 +19,7 @@ import ModalLobito from '../components/modal/modal';
 import RouterApi from '../../utils/router_api';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -33,24 +34,46 @@ const Gear = require('../../../assets/settings_gear.png');
 const Person = require('../../../assets/personagens.png');
 const SetaBaixo = require('../../../assets/arrow_down.png');
 const SetaLado = require('../../../assets/side_arrow.png');
-const Notification = require('../../../assets/mdi_bell-outline.png')
+const Notification = require('../../../assets/icon_notif.png')
 
 export default Pefil = observer(() => {
     const [modalVisible, setModalVisible] = useState(false);
+    const navigation = useNavigation();
+    const logOut = async () => {
+        try {
+            await AsyncStorage.removeItem("uid");
+            CourseProgramming.logOff();
+            Client.logOff();
+            Client.setIsUserLoggedIn(false);
 
+            navigation.navigate("IntroScreen");
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const updatePhoto = async (photo) => {
+        try {
+            await RouterApi.patch(`/aprendev/clients/${Client.uid}`, { char: photo })
+            Client.setChar(photo);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const handleChangeName = async (newName) => {
         const body = {
             nome: newName
         }
-        await RouterApi.patch(`/aprendev/clientes/${Client.uid}`, body)
+        await RouterApi.patch(`/aprendev/clients/${Client.uid}`, body)
         Client.setName(newName)
         setModalVisible(false);
     };
 
-    const navigation = useNavigation();
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, {
+            backgroundColor: "#E2E8F0"
+        }]}>
             <Navbar />
             <ScrollView contentContainerStyle={{ marginHorizontal: 12 }}>
 
@@ -85,12 +108,7 @@ export default Pefil = observer(() => {
                         alignItems: 'center',
 
                     }}>
-                        <View style={{
-                            width: 100,
-                            height: 100,
-                            borderRadius: 50,
-                            backgroundColor: 'blue',
-                        }} />
+                        <Image style={{ width: 150, height: 150 }} source={{ uri: Client.char }} />
                     </View>
                     <View style={styles.name}>
                         <View style={{ width: "80%" }}>
@@ -100,9 +118,13 @@ export default Pefil = observer(() => {
                             <Image style={styles.pencilIcon} source={require('../../../assets/pencil.png')} />
                         </TouchableOpacity>
                         <ModalLobito
+                            onClose={() => setModalVisible(false)}
+                            visibleCloseBottom={true}
+                            width={150}
+                            height={150}
                             titulo="Alterar seu UserName"
                             btnName="Trocar"
-                            imagem="https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/mascotetriste.png?alt=media&token=ef78b123-8575-46b6-933e-9add64e1a56b"
+                            imagem={`${Client.char}`}
                             visible={modalVisible}
                             showInput={true}
                             onPress={handleChangeName}
@@ -127,23 +149,31 @@ export default Pefil = observer(() => {
                                 let totalNiveis = 0;
                                 let aulasConcluidas = 0;
                                 let niveisConcluidos = 0;
-
+                                let totalDesafios = 0;
+                                let desafiosConcluidos = 0;
 
                                 for (const nivelKey in element) {
-                                    if (element.hasOwnProperty(nivelKey) && nivelKey.startsWith('nivel_')) {
+                                    if (element.hasOwnProperty(nivelKey) && nivelKey.startsWith('level_')) {
                                         totalNiveis++;
                                         const nivel = element[nivelKey];
-                                        const nivelNum = parseInt(nivelKey.replace('nivel_', ''), 10);
+                                        const nivelNum = parseInt(nivelKey.replace('level_', ''), 10);
 
-                                        if (nivelNum < matricula?.nivel) {
+                                        if (nivelNum < matricula?.level) {
                                             niveisConcluidos++;
                                         }
 
                                         for (const aulaKey in nivel) {
-                                            if (nivel.hasOwnProperty(aulaKey) && aulaKey.startsWith('aula_')) {
+                                            if (nivel.hasOwnProperty(aulaKey) && aulaKey.startsWith('class_')) {
                                                 totalAulas++;
-                                                if (nivelNum < matricula?.nivel || (nivelNum === matricula?.nivel && parseInt(aulaKey.replace('aula_', ''), 10) < matricula?.progress)) {
+                                                if (nivelNum < matricula?.level || (nivelNum === matricula?.level && parseInt(aulaKey.replace('class_', ''), 10) < matricula?.progress)) {
                                                     aulasConcluidas++;
+                                                }
+                                            }
+
+                                            if (nivel.hasOwnProperty(aulaKey) && aulaKey.startsWith('assessmentQuestion_')) {
+                                                totalDesafios++;
+                                                if (nivelNum < matricula?.level || (nivelNum === matricula?.level && parseInt(aulaKey.replace('assessmentQuestion_', ''), 10) < matricula?.progress)) {
+                                                    desafiosConcluidos++;
                                                 }
                                             }
                                         }
@@ -153,13 +183,14 @@ export default Pefil = observer(() => {
                                 return (
                                     <View key={key}>
                                         <CardCourseProgress
-                                            title={`${element.curso}`}
+                                            title={`${element.course}`}
                                             image={`${element.logo}`}
-                                            progress={`${matricula?.status}`}
+                                            progress={`${matricula?.level === 5 ? "concluido" : matricula?.status}`}
                                             aulas={`${totalAulas}`}
                                             niveis={`${totalNiveis}`}
                                             aulas_feitas={`${aulasConcluidas}`}
                                             niveis_feitos={`${niveisConcluidos}`}
+
                                         />
                                     </View>
                                 );
@@ -170,22 +201,31 @@ export default Pefil = observer(() => {
 
 
                     </PerfilButtonComponent>
-
                     <PerfilButtonComponent
                         texto={'Conquistas'}
                         sourceImage={Medalha}
                         sourceImage2={SetaBaixo}
                     >
-                        <View style={{ flexDirection: 'row', flexWrap: "wrap", alignItems: "center" }}>
-                            {Client.selos.map((element, index) => {
+                        <View style={{ flexDirection: 'row', flexWrap: "wrap", alignItems: "center", justifyContent: "center", alignSelf: "center" }}>
+
+                            {Client.selos?.length > 0 ? Client.selos.map((element, index) => {
+
                                 return (
+
                                     <Image
                                         key={index}
-                                        style={{ width: 43, height: 42.2, marginBottom: 8, marginRight: index !== Client.selos.length - 1 ? 5 : 0 }}
+                                        style={{ width: 70, height: 70, marginBottom: 8, marginRight: index !== Client.selos.length - 1 ? 5 : 0 }}
                                         source={{ uri: element }}
                                     />
+
                                 );
-                            })}
+
+
+                            }) :
+                                (<>
+                                    <Text style={{ textAlign: "center", fontSize: 16 }}>Você ainda não tem nenhuma conquista</Text>
+                                </>)
+                            }
                         </View>
 
 
@@ -208,7 +248,27 @@ export default Pefil = observer(() => {
                         texto={'Meus Personagens'}
                         sourceImage={Person}
                         sourceImage2={SetaLado}
-                    />
+                    >
+                        <View style={{ flexDirection: 'row', flexWrap: "wrap", alignItems: "center", justifyContent: "center", alignSelf: "center" }}>
+                            {Client.characters.map((element, index) => {
+                                const isEquipped = element === Client.char;
+
+                                return (
+                                    <View key={index} style={{ borderRadius: 8, margin: 10, }}>
+                                        <Image
+                                            key={index}
+                                            style={{ width: 100, height: 100, padding: 10, marginBottom: 10, marginRight: index !== Client.characters.length - 1 ? 5 : 0 }}
+                                            source={{ uri: element }}
+                                        />
+                                        <TouchableOpacity onPress={() => updatePhoto(element)} disabled={isEquipped ? true : false} style={{ backgroundColor: `${isEquipped ? "#A3A3A3" : "#3B82F6"}`, borderRadius: 8 }}>
+                                            <Text style={{ fontSize: 16, color: "white", textAlign: "center" }}>{isEquipped ? "Equipado" : "Equipar"}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+
+                            })}
+                        </View>
+                    </PerfilButtonComponent>
                     <PerfilButtonComponent
                         texto={'Configurações'}
                         redirect={"Configuração"}
@@ -217,12 +277,13 @@ export default Pefil = observer(() => {
                         sourceImage={Gear}
                         sourceImage2={SetaLado}
                     />
+                    <TouchableOpacity style={styles.logout} onPress={() => logOut()}>
+                        <View >
 
-                    <View style={styles.logout}>
-                        <View style={{ width: "80%" }}>
-                            <Text style={{ fontSize: 20 }}>SAIR DA CONTA</Text>
+                            <Text style={{ fontSize: 16 }}>SAIR DA CONTA</Text>
+
                         </View>
-                    </View>
+                    </TouchableOpacity>
 
                 </View>
             </ScrollView >

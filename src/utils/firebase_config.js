@@ -19,3 +19,4 @@ const db = getDatabase();
 const auth = getAuth(firebaseApp); // Corrigido para passar firebaseApp como argumento
 
 export { firebaseApp, auth, db };
+

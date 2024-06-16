@@ -2,17 +2,17 @@ import React from 'react';
 import { Text, SafeAreaView, StyleSheet, Image, View } from 'react-native';
 import { Card } from 'react-native-paper';
 
-export default function CardComponent(props) {
-    const { sourceImage, sourceImage2, price } = props;
+export default function CardComponent({ name, imageNull = true, sourceImage, sourceImage2, price }) {
 
     return (
 
         <Card style={styles.outerCard}>
             <View style={[styles.innerCardContent, styles.innerCardPequeno]}>
-                <Image style={styles.mascote} source={sourceImage} />
+                <Text>{name}</Text>
+                <Image style={styles.mascote} source={{ uri: sourceImage }} />
                 <View style={styles.textContainer}>
                     <View style={styles.subtitulo}>
-                        <Image source={sourceImage2} />
+                        {imageNull ? <Image style={{ width: 20, height: 20 }} source={{ uri: sourceImage2 }} /> : false}
                         <Text>{price}</Text>
                     </View>
                 </View>

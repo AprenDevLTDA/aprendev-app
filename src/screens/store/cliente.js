@@ -16,7 +16,10 @@ class ClienteStore {
     @observable heart = 0;
     @observable coins = 0;
     @observable selos = [];
-    @observable user = {};
+    @observable characters = [];
+    @observable char = "";
+    @observable isUserLoggedIn = false;
+    @observable score = 0;
 
     constructor() {
         makeAutoObservable(this);
@@ -52,8 +55,8 @@ class ClienteStore {
     @action setCoins(coins = 0) {
         this.coins = coins;
     }
-    @action setUser(user = {}) {
-        this.user = user;
+    @action setIsUserLoggedIn(isUserLoggedIn = false) {
+        this.isUserLoggedIn = isUserLoggedIn;
     }
     @action setUid(uid = "") {
         this.uid = uid;
@@ -70,12 +73,34 @@ class ClienteStore {
     @action setSelos(selos = []) {
         this.selos = selos;
     }
+    @action setCharacters(characters = []) {
+        this.characters = characters;
+    }
+    @action setChar(char = "") {
+        this.char = char;
+    }
+    @action setScore(score = 0) {
+        this.score = score;
+    }
 
     @action logOff() {
-        setName("");
-        setNivel("");
-        setEmail("");
-
+        this.uid = "";
+        this.hash = "";
+        this.hashCoursesUser = "";
+        this.hashMatricula = "";
+        this.idCourse = "";
+        this.idPerformance = "";
+        this.progress = "";
+        this.name = "";
+        this.nivel = "";
+        this.email = "";
+        this.password = "";
+        this.confirmPassword = "";
+        this.heart = 0;
+        this.coins = 0;
+        this.selos = [];
+        this.characters = [];
+        this.score = 0;
     }
 
 }

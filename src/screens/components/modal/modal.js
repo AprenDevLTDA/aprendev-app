@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Modal, Text, Image, Pressable, TextInput, StyleSheet } from 'react-native';
 
-const ModalLobito = ({ onPress, onClose, imagem, btnName, titulo, visible = true, showInput = false, visibleCloseBottom = false }) => {
+const ModalLobito = ({ backgroundColorClose = '#2196F3',
+    backgroundColor = '#2196F3', width = 160,
+    height = 179, onPress, onClose, imagem, btnName, titulo, visible = true, showInput = false, visibleCloseBottom = false }) => {
     const [inputValue, setInputValue] = useState('');
 
     return (
@@ -16,7 +18,7 @@ const ModalLobito = ({ onPress, onClose, imagem, btnName, titulo, visible = true
                 <View style={styles.modalView}>
                     {visibleCloseBottom ?
                         (<View style={styles.closeButtonContainer}>
-                            <Pressable style={styles.closeButton} onPress={onClose}>
+                            <Pressable style={[styles.closeButton, { backgroundColor: backgroundColorClose }]} onPress={onClose}>
                                 <Text style={styles.closeButtonText}>X</Text>
                             </Pressable>
                         </View>) : (<></>)}
@@ -24,7 +26,7 @@ const ModalLobito = ({ onPress, onClose, imagem, btnName, titulo, visible = true
                     <View style={styles.containerimg}>
                         <Image
                             source={{ uri: imagem }}
-                            style={styles.image}
+                            style={{ width: width, height: height }}
                         />
                     </View>
                     {showInput && (
@@ -36,7 +38,7 @@ const ModalLobito = ({ onPress, onClose, imagem, btnName, titulo, visible = true
                         />
                     )}
                     <Pressable
-                        style={[styles.button, styles.buttonClose]}
+                        style={[styles.button, { backgroundColor: backgroundColor }]}
                         onPress={() => {
                             onPress && onPress(inputValue);
                         }}>
@@ -76,12 +78,8 @@ const styles = StyleSheet.create({
         elevation: 2,
         width: 250
     },
-    buttonOpen: {
-        backgroundColor: '#F194FF',
-    },
-    buttonClose: {
-        backgroundColor: '#2196F3',
-    },
+
+
     textStyle: {
         fontSize: 16,
         color: 'white',
@@ -99,10 +97,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    image: {
-        width: 160,
-        height: 179,
-    },
+
     input: {
         height: 40,
         borderColor: 'gray',
@@ -118,7 +113,6 @@ const styles = StyleSheet.create({
         right: 10,
     },
     closeButton: {
-        backgroundColor: '#2196F3',
         width: 30,
         height: 30,
         borderRadius: 15,

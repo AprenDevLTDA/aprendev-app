@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
         height: 60
     },
     title: {
-        fontSize: 20,
+        fontSize: 25,
         fontWeight: 'bold',
         marginTop: 10,
         textAlign: "center"
@@ -30,8 +30,9 @@ const styles = StyleSheet.create({
         color: "black"
     },
     description: {
-        fontSize: 16,
-        marginTop: 25,
+        fontSize: 20,
+        fontWeight: "500",
+        marginTop: 16,
         textAlign: 'center',
         flexWrap: 'wrap'
 
@@ -43,15 +44,13 @@ const styles = StyleSheet.create({
     buttonIntro: {
         marginLeft: 50,
         marginRight: 50,
-        marginBottom: 10,
-        marginTop: 10,
-        borderRadius: 12,
+        marginTop: "10%",
+        borderRadius: 8
     },
     input: {
         height: 40,
         borderColor: 'black',
         borderWidth: 1,
-        marginBottom: 10,
         paddingHorizontal: 10,
         borderTopLeftRadius: 10,
     },
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
         width: '50%', // Alterado para ocupar toda a largura
         backgroundColor: '#3B82F6',
         color: '#3B82F6',
-        marginTop: 30,
+        marginTop: 16,
 
     },
 
@@ -108,7 +107,8 @@ const styles = StyleSheet.create({
     },
     label: {
         marginLeft: 5,
-        fontSize: 16, // Personaliza el tamaño de fuente según tus necesidades
+        fontSize: 16,
+        marginTop: 8 // Personaliza el tamaño de fuente según tus necesidades
     },
 });
 export default styles;

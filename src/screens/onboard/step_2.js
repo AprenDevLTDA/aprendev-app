@@ -10,38 +10,47 @@ import CustomCheckBox from '../components/checkbox/custom_check_box';
 import { Checkbox } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons'; // Asegúrate de tener instalado este paquete si lo estás utilizando
 import RouterApi from '../../utils/router_api';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, } from 'firebase/auth';
 import { auth } from '../../utils/firebase_config';
+import { observer } from 'mobx-react-lite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-const Step2Onboard = () => {
+const Step2Onboard = observer(() => {
 
 
 
     nexStep = async () => {
         try {
-
             Cliente.setHeart(5);
             Cliente.setCoins(100);
+            Cliente.setChar("https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/Perfil_Padrao.png?alt=media&token=6f1447a8-703d-4c3c-a29a-44e883d89d6b");
+            Cliente.setCharacters("https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/Perfil_Padrao.png?alt=media&token=6f1447a8-703d-4c3c-a29a-44e883d89d6b");
 
-            const userCredential = await createUserWithEmailAndPassword(auth, Cliente.email, Cliente.password);
-            const user = userCredential.user;
-            Cliente.setUid(user.uid);
+            if (Cliente.uid === "") {
+                const userCredential = await createUserWithEmailAndPassword(auth, Cliente.email, Cliente.password)
+                const user = userCredential.user;
+                Cliente.setUid(user.uid);
 
+            }
 
             const body = {
                 [Cliente.uid]: {
-                    nome: Cliente.name,
+                    name: Cliente.name,
                     email: Cliente.email,
-                    nivel: Cliente.nivel,
+                    level: Cliente.nivel,
                     heart: Cliente.heart,
                     coins: Cliente.coins,
+                    char: Cliente.char,
+                    characters: [Cliente.characters]
                 }
 
             };
 
-            RouterApi.patch("/aprendev/clientes", body);
-
+            RouterApi.patch("/aprendev/clients", body);
+            const userData = Cliente.uid;
+            await AsyncStorage.setItem('uid', JSON.stringify(userData));
+            Cliente.setIsUserLoggedIn(true);
             navigation.navigate('Main');
 
         } catch (error) {
@@ -87,5 +96,5 @@ const Step2Onboard = () => {
     )
 
 
-}
+});
 export default Step2Onboard;

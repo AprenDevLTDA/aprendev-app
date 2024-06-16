@@ -21,13 +21,16 @@ const NivelOne = observer(() => {
     const [dataKeysCurrent, setDataKeysCurrent] = useState(key_nivel);
     const [selectedIndex, setSelectedIndex] = useState(null);
 
-    const showModal = (imagem, btnName, titulo, onPress) => {
+    const showModal = (imagem, btnName, titulo, onPress, width = 160,
+        height = 179) => {
         setModalContent({
             visible: true,
             imagem,
             btnName,
             titulo,
-            onPress
+            onPress,
+            width,
+            height
         });
         setModalVisible(true);
     };
@@ -67,7 +70,7 @@ const NivelOne = observer(() => {
 
     const handleOutOfLives = async () => {
         showModal(
-            "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/mascotetriste.png?alt=media&token=2724ce5e-f038-4be7-8430-8d84064a4c50",
+            "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/mascotetriste.png?alt=media&token=ef78b123-8575-46b6-933e-9add64e1a56b",
             "Comprar",
             "Ih, suas vidas acabaram... Compre mais vidas para tentar novamente!",
             async () => {
@@ -79,20 +82,45 @@ const NivelOne = observer(() => {
 
     const handleBadge = async () => {
         showModal(
+
             data[dataKeysCurrent],
             "Resgatar Selo",
             "SHOW! Você finalizou o nivel. Resgate seu selo, e siga nos estudos!",
             async () => {
                 await fetchBadgeCourse();
                 setModalVisible(false);
+            },
+            150,
+            150
+        );
+    };
+    const handleBadgeDesafioBOm = async () => {
+        showModal(
+            "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/IMG-20240523-WA0032.jpg?alt=media&token=e9fbb469-677d-4beb-8fd2-4bf43e58ae0e",
+            "Ir para o selo!",
+            `MANDOU BEM! Você passou no Desafio!\n \n pontuação: ${10 * (Client.score / 1000)} acertos de 10 questões`,
+            async () => {
+                await verifyDesafio();
+                setModalVisible(false);
             }
         );
     };
 
+    const handleBadgeDesafioMal = async () => {
+        showModal(
+            "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/mascotetriste.png?alt=media&token=ef78b123-8575-46b6-933e-9add64e1a56b",
+            "Voltar para Meus Cursos!",
+            `Essa não... Você não atingiu a nota necessária. \n\n Você acertou apenas ${10 * (Client.score / 1000)} de 10 questões`,
+            async () => {
+                setModalVisible(false);
+                navigation.navigate("Cursos")
+            }
+        );
+    };
     const nextKey = async () => {
         try {
-            if (data[dataKeysCurrent].arrayAlternativas === undefined) {
-                if (Client.progress !== "selo") {
+            if (data[dataKeysCurrent].alternatives === undefined) {
+                if (Client.progress !== "emblem") {
                     await verify();
                     return;
                 } else {
@@ -100,7 +128,6 @@ const NivelOne = observer(() => {
                     return
                 }
             }
-
             if (selectedIndex === null) {
                 handleNoOptionSelected();
                 return;
@@ -110,54 +137,33 @@ const NivelOne = observer(() => {
                 handleOutOfLives();
                 return;
             }
-
-            if (data[dataKeysCurrent].arrayAlternativas[selectedIndex] === data[dataKeysCurrent].resposta) {
-                await handleCorrectAnswer();
+            if (dataKeysCurrent.includes('assessmentQuestion_')) {
+                handleVerifyQuestion();
             } else {
-                await handleWrongAnswer();
+
+                if (data[dataKeysCurrent].alternatives[selectedIndex] === data[dataKeysCurrent].answer) {
+                    await handleCorrectAnswer();
+                } else {
+                    await handleWrongAnswer();
+                }
             }
+
 
         } catch (error) {
             console.error(error);
         }
     };
 
-    const fetchBadgeCourse = async () => {
+    const handleVerifyQuestion = async () => {
         Client.setHashCoursesUser(key);
+        if (data[dataKeysCurrent].alternatives[selectedIndex] === data[dataKeysCurrent].answer) {
+            Client.setScore(Client.score + 100);
 
-        const selo = data[dataKeysCurrent];
-        const seloPath = `aprendev/clientes/${Client.uid}`;
-
-        try {
-            // Leia o valor atual do selo
-            const currentDataSnapshot = await RouterApi.get(seloPath);
-
-            // Verifica se existe algum dado no caminho
-            const currentData = currentDataSnapshot ? currentDataSnapshot.val() : {};
-
-            // Verifica se existe a propriedade 'selos' e garante que é um array
-            const selos = currentData.selos ? currentData.selos : [];
-
-            // Incrementa o valor do selo localmente
-            const updatedData = {
-                ...currentData,
-                selos: [...selos, selo]
-            };
-
-            // Atualiza o valor no banco de dados
-            await RouterApi.patch(seloPath, updatedData);
-
-            // Atualiza o estado do cliente localmente
-            Client.setSelos([...selos, selo]);
-
-            // Incrementa o nível localmente
-            CourseProgramming.setNivel(CourseProgramming.nivel + 1);
             const body = {
-                nivel: CourseProgramming.nivel,
-                progress: "aula_01"
-            };
+                score: Client.score
+            }
 
-            const matriculasQuery = query(ref(db, '/aprendev/matriculas'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
+            const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
             const matriculasSnapshot = await get(matriculasQuery);
 
             if (matriculasSnapshot.exists()) {
@@ -169,7 +175,104 @@ const NivelOne = observer(() => {
                 const matriculasArray = filteredData.map(item => item.key);
                 Client.setHashMatricula(matriculasArray);
             }
-            await RouterApi.patch(`/aprendev/matriculas/${Client.hashMatricula}`, body);
+            await RouterApi.patch(`/aprendev/enrollments/${Client.hashMatricula}`, body);
+
+            if (dataKeysCurrent === "assessmentQuestion_10") {
+
+                const result = 10 * (Client.score / 1000);
+                if (result >= 7) {
+                    await handleBadgeDesafioBOm();
+                    return;
+
+                } else {
+
+                    await handleBadgeDesafioMal();
+                    await deleteCScore();
+                    await deleteHeart();
+
+                    return;
+                }
+            }
+
+            await verifyDesafio();
+
+
+        } else {
+            if (dataKeysCurrent === "assessmentQuestion_10") {
+
+                const result = 10 * (Client.score / 1000);
+                if (result >= 7) {
+                    await handleBadgeDesafioBOm();
+                    return;
+
+                } else {
+
+                    await handleBadgeDesafioMal();
+                    await deleteCScore();
+                    await deleteHeart();
+
+                    return;
+                }
+
+
+
+            }
+
+            await verifyDesafio();
+
+        }
+
+
+    }
+
+    const fetchBadgeCourse = async () => {
+        Client.setHashCoursesUser(key);
+
+        const selo = data[dataKeysCurrent];
+        const seloPath = `aprendev/clients/${Client.uid}`;
+
+        try {
+            // Leia o valor atual do selo
+            const currentDataSnapshot = await RouterApi.get(seloPath);
+
+            // Verifica se existe algum dado no caminho
+            const currentData = currentDataSnapshot ? currentDataSnapshot.val() : {};
+
+            // Verifica se existe a propriedade 'selos' e garante que é um array
+            const selos = currentData.emblems ? currentData.emblems : [];
+
+            // Incrementa o valor do selo localmente
+            const updatedData = {
+                ...currentData,
+                emblems: [...selos, selo]
+            };
+
+            // Atualiza o valor no banco de dados
+            await RouterApi.patch(seloPath, updatedData);
+
+            // Atualiza o estado do cliente localmente
+            Client.setSelos([...selos, selo]);
+
+            // Incrementa o nível localmente
+            CourseProgramming.setNivel(CourseProgramming.nivel + 1);
+            const body = {
+                level: CourseProgramming.nivel,
+                progress: CourseProgramming.nivel === 4 ? "assessmentQuestion_01" : "class_01"
+            };
+
+            const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
+            const matriculasSnapshot = await get(matriculasQuery);
+
+            if (matriculasSnapshot.exists()) {
+                const matriculasData = matriculasSnapshot.val();
+                const filteredData = Object.entries(matriculasData)
+                    .filter(([key, matricula]) => matricula.uid === Client.uid)
+                    .map(([key, matricula]) => ({ key, ...matricula }));
+
+                const matriculasArray = filteredData.map(item => item.key);
+                Client.setHashMatricula(matriculasArray);
+            }
+            await RouterApi.patch(`/aprendev/enrollments/${Client.hashMatricula}`, body);
             Client.setProgress("");
             CourseProgramming.setNivel(0);
             navigation.navigate("Cursos");
@@ -179,14 +282,56 @@ const NivelOne = observer(() => {
         }
     };
 
+    const verifyDesafio = async () => {
+        if (dataKeysCurrent === "assessmentQuestion_10") {
+            const keysProgressos = Object.keys(data);
+            const keyProgress = keysProgressos.indexOf(dataKeysCurrent);
+            Client.setProgress(keysProgressos[keyProgress + 1]);
+            const body = { progress: Client.progress };
+
+            Client.setHashCoursesUser(key);
+            const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
+            const matriculasSnapshot = await get(matriculasQuery);
+
+            if (matriculasSnapshot.exists()) {
+                const matriculasData = matriculasSnapshot.val();
+                const filteredData = Object.entries(matriculasData)
+                    .filter(([key, matricula]) => matricula.uid === Client.uid)
+                    .map(([key, matricula]) => ({ key, ...matricula }));
+
+                const matriculasArray = filteredData.map(item => item.key);
+                Client.setHashMatricula(matriculasArray);
+            }
+
+            await RouterApi.patch(`/aprendev/enrollments/${Client.hashMatricula}`, body);
+        }
+        const keys = Object.keys(data);
+        const currentIndex = keys.indexOf(dataKeysCurrent);
+        if (currentIndex < keys.length - 1) {
+            setDataKeysCurrent(keys[currentIndex + 1]);
+        }
+        setIncorrectSelections([]);
+        setSelectedIndex(null);
+
+
+        const coins = Client.coins + 5;
+        const bodyCoin = {
+            coins: coins
+        }
+        Client.setCoins(coins);
+        await RouterApi.patch(`/aprendev/clients/${Client.uid}`, bodyCoin);
+    };
+
+
     const verify = async () => {
+
         const keysProgressos = Object.keys(data);
         const keyProgress = keysProgressos.indexOf(dataKeysCurrent);
         Client.setProgress(keysProgressos[keyProgress + 1]);
-        Client.setHashCoursesUser(key);
         const body = { progress: Client.progress };
 
-        const matriculasQuery = query(ref(db, '/aprendev/matriculas'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
+        Client.setHashCoursesUser(key);
+        const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
         const matriculasSnapshot = await get(matriculasQuery);
 
         if (matriculasSnapshot.exists()) {
@@ -198,7 +343,8 @@ const NivelOne = observer(() => {
             const matriculasArray = filteredData.map(item => item.key);
             Client.setHashMatricula(matriculasArray);
         }
-        await RouterApi.patch(`/aprendev/matriculas/${Client.hashMatricula}`, body);
+        await RouterApi.patch(`/aprendev/enrollments/${Client.hashMatricula}`, body);
+
 
         const keys = Object.keys(data);
         const currentIndex = keys.indexOf(dataKeysCurrent);
@@ -207,18 +353,20 @@ const NivelOne = observer(() => {
         }
         setIncorrectSelections([]);
         setSelectedIndex(null);
+
+
         const coins = Client.coins + 5;
         const bodyCoin = {
             coins: coins
         }
         Client.setCoins(coins);
-        await RouterApi.patch(`/aprendev/clientes/${Client.uid}`, bodyCoin);
+        await RouterApi.patch(`/aprendev/clients/${Client.uid}`, bodyCoin);
     };
 
     const verifyErroQuestion = async () => {
 
         if (Client.heart === 0) {
-            navigation.navigate('Home');
+            navigation.navigate('Loja');
         } else {
             setIncorrectSelections([...incorrectSelections, selectedIndex]);
             setSelectedIndex(null);
@@ -227,9 +375,45 @@ const NivelOne = observer(() => {
                 heart: heart
             }
             Client.setHeart(heart);
-            await RouterApi.patch(`/aprendev/clientes/${Client.uid}`, body);
+            await RouterApi.patch(`/aprendev/clients/${Client.uid}`, body);
         }
     };
+
+    const deleteHeart = async () => {
+        let heart = Client.heart - 1;
+        if (heart <= 0) {
+            heart = 0;
+            Client.setHeart(heart);
+        } else {
+            Client.setHeart(Client.heart - 2);
+
+        }
+        await RouterApi.patch(`/aprendev/clients/${Client.uid}`, { heart: Client.heart })
+
+    }
+
+    const deleteCScore = async () => {
+        Client.setHashCoursesUser(key);
+
+        const body = {
+            score: 0,
+        }
+
+        const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid_course'), equalTo(Client.hashCoursesUser));
+        const matriculasSnapshot = await get(matriculasQuery);
+
+        if (matriculasSnapshot.exists()) {
+            const matriculasData = matriculasSnapshot.val();
+            const filteredData = Object.entries(matriculasData)
+                .filter(([key, matricula]) => matricula.uid === Client.uid)
+                .map(([key, matricula]) => ({ key, ...matricula }));
+
+            const matriculasArray = filteredData.map(item => item.key);
+            Client.setHashMatricula(matriculasArray);
+        }
+        await RouterApi.patch(`/aprendev/enrollments/${Client.hashMatricula}`, body);
+
+    }
 
     const navigation = useNavigation();
 
@@ -243,13 +427,25 @@ const NivelOne = observer(() => {
                     imagem={modalContent.imagem}
                     btnName={modalContent.btnName}
                     titulo={modalContent.titulo}
+                    width={modalContent.width}
+                    height={modalContent.height}
                 />
             )}
-            {console.log(dataKeysCurrent)}
             <View style={styles.container}>
-                <TouchableOpacity onPress={() => {
+                <TouchableOpacity onPress={async () => {
+                    if (dataKeysCurrent !== "emblem") {
+                        if (dataKeysCurrent.includes('assessmentQuestion_')) {
+                            await deleteCScore()
+                            navigation.goBack()
+                        } else {
+                            navigation.goBack()
 
-                    navigation.goBack()
+                        }
+                    } else {
+                        navigation.goBack()
+                    }
+
+
                 }}>
                     <View style={{ paddingRight: 20, paddingLeft: 20 }}>
 
@@ -262,7 +458,7 @@ const NivelOne = observer(() => {
             </View>
             <View style={{ backgroundColor: "#e2e8f0", height: "100%" }}>
                 <View style={{ flexDirection: "column", marginLeft: 20, marginRight: 20, }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 8 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
                         {(() => {
                             const items = [];
                             const heart = [];
@@ -284,9 +480,9 @@ const NivelOne = observer(() => {
                             return items;
                         })()}
                     </View>
-                    <View style={{ height: "80%", borderColor: "000", borderWidth: 2, marginTop: 8, padding: 16, marginBottom: "30%", borderRadius: 8 }}>
+                    <View style={{ height: "80%", marginTop: 8, padding: 16, marginBottom: "30%", borderRadius: 8 }}>
                         <View style={{ height: "90%", backgroundColor: "#CBD5E1", width: "100%", paddingTop: 20, padding: 16, borderRadius: 8 }}>
-                            <ScrollView>
+                            <ScrollView showsVerticalScrollIndicator={false}>
                                 <View style={{
                                     flexDirection: 'row',
                                     justifyContent: 'center',
@@ -294,32 +490,52 @@ const NivelOne = observer(() => {
                                 }}>
                                     <View style={{ borderColor: "transparent", borderWidth: 1, backgroundColor: "#073b91", borderRadius: 8 }}>
                                         <View style={{ backgroundColor: "#CBD5E1", flexDirection: "row", flex: 1, width: 205, height: 35, margin: 1, borderRadius: 8, justifyContent: "center", alignItems: "center" }}>
-                                            <Text style={{ textAlign: "center", marginRight: 8 }}>{data.assunto}</Text>
+                                            <Text style={{ textAlign: "center", marginRight: 8 }}>{data.subject}</Text>
                                         </View>
                                     </View>
                                 </View>
-                                {dataKeysCurrent === "selo" && <View style={{ alignItems: 'center', textAlign: "center" }}><Image style={{ width: 204, height: 200 }} source={{ uri: data[dataKeysCurrent] }} /></View>}
-                                {data[dataKeysCurrent].descricao !== undefined ? <>
-                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[dataKeysCurrent].titulo}</Text>
-                                    <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16 }}>{data[dataKeysCurrent].descricao}</Text>
-                                </> : data[dataKeysCurrent].pergunta !== undefined ? <>
-                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[dataKeysCurrent].pergunta}</Text>
-                                </> : <></>}
-                                {data[dataKeysCurrent].arrayImagens === undefined ? <></> : <View style={{ width: "100%", borderRadius: 8 }}>
-                                    <Image
-                                        source={{ uri: data[dataKeysCurrent].arrayImagens[0] }}
-                                        style={{ width: "100%", height: 150, borderRadius: 8 }}
-                                    />
-                                </View>}
-                                {data[dataKeysCurrent].topico === undefined ? <></> : <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16, marginTop: 16 }}>{data[dataKeysCurrent].topico}</Text>}
-                                {data[dataKeysCurrent].arrayImagens === undefined ? <></> : <View style={styles.containerimg}>
-                                    <Image
-                                        source={{ uri: data[dataKeysCurrent].arrayImagens[1] }}
-                                        style={{ width: "100%", height: 150, borderRadius: 8 }}
-                                    />
-                                </View>}
-                                {data[dataKeysCurrent].arrayAlternativas === undefined ? <></> :
-                                    data[dataKeysCurrent].arrayAlternativas.map((alternativa, index) => (
+
+                                <Text style={{ fontWeight: '600', justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 24 }}>{data[dataKeysCurrent].title}</Text>
+
+
+                                {data[dataKeysCurrent].content?.length > 0 ? (
+                                    <Text style={{ fontSize: 20, justifyContent: "space-around", textAlign: "justify", marginBottom: 16 }}>
+                                        {data[dataKeysCurrent].content[0]}
+                                    </Text>
+                                ) : null}
+
+                                {dataKeysCurrent === "emblem" && <View style={{ alignItems: 'center', textAlign: "center" }}><Image style={{ width: 204, height: 200 }} source={{ uri: data[dataKeysCurrent] }} /></View>}
+
+
+
+                                {data[dataKeysCurrent].images?.length > 0 ? (
+                                    <View style={{ width: "100%", borderRadius: 8 }}>
+                                        <Image
+                                            source={{ uri: data[dataKeysCurrent].images[0] }}
+                                            style={{ width: "100%", height: 150, borderRadius: 8 }}
+                                        />
+                                    </View>
+                                ) : null}
+
+                                {data[dataKeysCurrent].content?.length > 1 ? (
+                                    <Text style={{ fontSize: 20, justifyContent: "space-around", textAlign: "justify", marginBottom: 16, marginTop: 16 }}>
+                                        {data[dataKeysCurrent].content[1]}
+                                    </Text>
+                                ) : null}
+
+                                {data[dataKeysCurrent].images?.length > 1 ? (
+                                    <View style={styles.containerimg}>
+                                        <Image
+                                            source={{ uri: data[dataKeysCurrent].images[1] }}
+                                            style={{ width: "100%", height: 150, borderRadius: 8 }}
+                                        />
+                                    </View>
+                                ) : null}
+                                {data[dataKeysCurrent].question === undefined ? <></> : <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[dataKeysCurrent].question}</Text>
+                                }
+
+                                {data[dataKeysCurrent].alternatives === undefined ? <></> :
+                                    data[dataKeysCurrent].alternatives.map((alternativa, index) => (
                                         <TouchableOpacity
                                             key={index}
                                             onPress={() => setSelectedIndex(index)}
@@ -329,16 +545,18 @@ const NivelOne = observer(() => {
                                                 style={{
                                                     borderRadius: 8,
                                                     marginBottom: 16,
-                                                    backgroundColor: selectedIndex === index ? "blue" : incorrectSelections.includes(index) ? "gray" : "red", // Gray out incorrect answers
+                                                    backgroundColor: incorrectSelections.includes(index) ? "#A3A3A3" : "#F1F5F9",
+                                                    borderColor: selectedIndex === index ? "#3B82F6" : "transparent",
                                                     width: "100%",
-                                                    padding: 20
+                                                    padding: 20,
+                                                    borderWidth: 3,
                                                 }}
                                             >
                                                 <Text
                                                     style={{
                                                         fontSize: 20,
                                                         textAlign: 'center',
-                                                        color: selectedIndex === index || incorrectSelections.includes(index) ? "white" : "black"
+                                                        color: selectedIndex === index || incorrectSelections.includes(index) ? "black" : "black"
                                                     }}
                                                 >
                                                     {alternativa}
@@ -349,7 +567,7 @@ const NivelOne = observer(() => {
                             </ScrollView>
                         </View>
                         <TouchableOpacity onPress={() => { nextKey() }} style={{ backgroundColor: "#042357", marginTop: 10, borderRadius: 8, padding: 20 }}>
-                            <Text style={{ color: "white", textAlign: "center", fontSize: 16 }}>{data[dataKeysCurrent].arrayAlternativas === undefined ? "Proximo" : "Responder"}</Text>
+                            <Text style={{ color: "white", textAlign: "center", fontSize: 20 }}>{data[dataKeysCurrent].arrayAlternativas === undefined ? "Proximo" : "Responder"}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -361,10 +579,10 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 20,
         borderBottomColor: "#000",
         borderBottomWidth: 2,
-        paddingBottom: 8
+        paddingBottom: 8,
+        paddingTop: 10,
     },
     containerList: {
         justifyContent: 'center',

@@ -8,6 +8,7 @@ class CourseProgramminStore {
     @observable keysCourse = [];
     @observable dataNivel = {};
     @observable modalVisible = false;
+    @observable modalVisibleError = false;
 
 
     constructor() {
@@ -33,8 +34,19 @@ class CourseProgramminStore {
     @action setModalVisible(modalVisible = false) {
         this.modalVisible = modalVisible;
     }
+    @action setModalVisibleError(modalVisibleError = false) {
+        this.modalVisibleError = modalVisibleError;
+    }
 
+    @action logOff() {
+        this.cursos = [];
+        this.nivel = 0;
 
+        this.matriculas = [];
+        this.keysCourse = [];
+        this.dataNivel = {};
+        this.modalVisible = false;
+    }
 
 }
 const CourseProgramming = new CourseProgramminStore(); // Criar uma instância da sua store

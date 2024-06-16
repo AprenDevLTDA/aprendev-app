@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Text,
     SafeAreaView,
     StyleSheet,
-    Image,
     View,
     ScrollView,
     TouchableOpacity,
@@ -11,27 +10,49 @@ import {
 import PerfilButtonComponent from '../components/button/perfil_button.component';
 import Navbar from '../components/navBar/navBar';
 import Client from '../store/cliente';
-import CardCourse from '../components/card-course/card-course';
-import CardCourseProgress from '../components/card-course/card_course_progress';
 import CourseProgramming from '../store/course_programming';
 import { observer } from 'mobx-react-lite';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { equalTo, get, orderByChild, query, ref, } from 'firebase/database';
+import { db } from '../../utils/firebase_config';
+import RouterApi from '../../utils/router_api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 
 
-
-
-
-const Medalha = require('../../../assets/Medalha.png');
-const acessibility = require('../../../assets/mode-theme.png')
-
-const SetaBaixo = require('../../../assets/arrow_down.png');
+const Notification = require('../../../assets/icon_notif.png')
+const PF = require('../../../assets/faq.png');
+const Chat = require('../../../assets/chat.png')
 
 export default ConfigScreen = observer(() => {
     const navigation = useNavigation();
+
+    const deleteProfile = async () => {
+        const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid'), equalTo(Client.uid));
+        const querySnapshot = await get(matriculasQuery);
+
+        if (querySnapshot.exists()) {
+            let keyarray = Object.keys(querySnapshot.val());
+
+            for (let index = 0; index <= keyarray.length; index++) {
+                await RouterApi.delete(`/aprendev/enrollments/${keyarray[index]}`);
+            }
+
+        }
+        await RouterApi.delete(`/aprendev/clients/${Client.uid}`);
+        await AsyncStorage.removeItem("uid");
+        CourseProgramming.logOff();
+        Client.logOff();
+        Client.setIsUserLoggedIn(false);
+        navigation.navigate("IntroScreen");
+    }
     return (
-        <SafeAreaView>
+        <SafeAreaView style={{
+            backgroundColor: "#E2E8F0",
+            height: "100%"
+        }}>
             <Navbar />
             <ScrollView contentContainerStyle={{ marginHorizontal: 12 }}>
                 <View style={{ flex: 1, flexDirection: "row", marginTop: 20 }}>
@@ -54,31 +75,35 @@ export default ConfigScreen = observer(() => {
                     paddingVertical: 25,
                     gap: 10,
                 }}>
+
                     <PerfilButtonComponent
-                        texto={'Acessibilidade'}
-                        sourceImage={acessibility}
-                        sourceImage2={SetaBaixo}
-                    >
-                    </PerfilButtonComponent>
-                    <PerfilButtonComponent
-                        texto={'Notificação'}
-                        sourceImage={Medalha}
-                        sourceImage2={SetaBaixo}
-                    >
-                    </PerfilButtonComponent>
+                        redirect={"Notification"}
+                        showIcon={false}
+                        expandable={false}
+                        texto={'Notificações'}
+                        sourceImage={Notification}
+                    ></PerfilButtonComponent>
                     <PerfilButtonComponent
                         texto={'Perguntas frequentes'}
-                        sourceImage={Medalha}
-                        sourceImage2={SetaBaixo}
+                        sourceImage={PF}
+                        redirect={"Faq"}
+                        showIcon={false}
+                        expandable={false}
+
                     >
+
                     </PerfilButtonComponent>
                     <PerfilButtonComponent
-                        texto={'Fale conosco'}
-                        sourceImage={Medalha}
-                        sourceImage2={SetaBaixo}
+                        redirect={"Notification"}
+                        showIcon={false}
+                        expandable={false}
+                        texto={'Fale Conosco'}
+                        sourceImage={Chat}
+
+
                     >
                     </PerfilButtonComponent>
-                    <TouchableOpacity style={{ marginTop: "45%" }}>
+                    <TouchableOpacity onPress={() => deleteProfile()} style={{ marginTop: "70%" }}>
                         <Text style={{ color: "red", fontSize: 12 }}>
                             Excluir conta
                         </Text>

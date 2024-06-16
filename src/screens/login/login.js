@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Image, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { ScrollView } from "react-native-gesture-handler";
+import PerfilButtonComponent from '../components/button/perfil_button.component';
 import RouterApi from '../../utils/router_api';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Client from '../store/cliente';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, signInWithPopup, signInWithRedirect } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import GIFPlayer from 'react-native-gif';
-import { auth, db, firebaseApp } from '../../utils/firebase_config';
-import * as firebase from 'firebase/app'
-import CourseProgramming from '../store/course_programming';
+import { auth, db } from '../../utils/firebase_config';
 import { equalTo, get, orderByChild, query, ref } from 'firebase/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as Google from "expo-auth-session/providers/google";
+import { generateHexStringAsync } from 'expo-auth-session';
+import CourseProgramming from '../store/course_programming';
+import ForgotPassword from '../login/forgotPassword'
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -21,43 +23,98 @@ const Login = () => {
 
     const navigation = useNavigation();
 
+    const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+        androidClientId: "282887853209-h1rkuipq212j8n1foda3r16g5fqkqome.apps.googleusercontent.com",
+        extraParams: {
+            nonce: generateHexStringAsync(16),
+        },
+        usePKCE: true
+    });
+
+    async function signInWithGoogle() {
+        try {
+            await promptAsync();
+        } catch (error) {
+            console.error('Google sign-in error:', error);
+            Alert.alert('Erro', 'Falha na autenticação com Google.');
+        }
+    }
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const handleGoogleSignIn = async () => {
+                if (response?.type === 'success') {
+                    setLoadingCourses(true);
+                    const { id_token, accessToken } = response.params;
+                    const credential = GoogleAuthProvider.credential(id_token, accessToken);
+                    try {
+                        const userCredential = await signInWithCredential(auth, credential)
+                        const userSnapshot = await RouterApi.get(`/aprendev/clients/${userCredential.user.uid}`)
+
+
+                        if (userSnapshot && userSnapshot.val() !== null) {
+                            const dataVal = userSnapshot.val();
+                            Client.setUid(userCredential.user.uid);
+                            const userData = Client.uid;
+                            await AsyncStorage.setItem('uid', JSON.stringify(userData));
+                            Client.setCoins(dataVal.coins);
+                            Client.setName(dataVal.name);
+                            Client.setEmail(dataVal.email);
+                            Client.setNivel(dataVal.level);
+                            Client.setHeart(dataVal.heart);
+                            Client.setSelos(dataVal.emblems);
+                            Client.setCharacters(dataVal.characters);
+                            Client.setChar(dataVal.char);
+
+
+                            Client.setIsUserLoggedIn(true);
+                            setLoadingCourses(false);
+                            navigation.navigate("Main");
+                        } else {
+                            Client.setUid(userCredential.user.uid);
+                            Client.setEmail(userCredential.user.email);
+                            Client.setName(userCredential.user.displayName);
+                            setLoadingCourses(false);
+                            navigation.navigate("Step2Onboard");
+
+                        }
+
+                    } catch (error) {
+                        console.error('Firebase sign-in error:', error);
+                        Alert.alert('Erro', 'Falha na autenticação com Firebase.');
+                    }
+                } else {
+                    console.log("DEU MERDa ");
+                    console.log(response?.type);
+                }
+            };
+
+            handleGoogleSignIn();
+        }, [response])
+    );
 
     const loginUser = async () => {
         try {
             setLoadingCourses(true);
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
             Client.setUid(userCredential.user.uid);
             const userData = Client.uid;
             await AsyncStorage.setItem('uid', JSON.stringify(userData));
 
-            const data = await RouterApi.get(`/aprendev/clientes/${Client.uid}`);
+            const data = await RouterApi.get(`/aprendev/clients/${Client.uid}`);
             const dataVal = data.val();
             Client.setCoins(dataVal.coins);
-            Client.setName(dataVal.nome);
+            Client.setName(dataVal.name);
             Client.setEmail(dataVal.email);
-            Client.setNivel(dataVal.nivel);
+            Client.setNivel(dataVal.level);
             Client.setHeart(dataVal.heart);
-            Client.setSelos(dataVal.selos);
-            Client.setSelos(dataVal.selos);
-            const dataC = await RouterApi.get('/aprendev/cursos');
-            const cursosData = dataC.val() || {};
+            Client.setSelos(dataVal.emblems);
+            Client.setCharacters(dataVal.characters);
+            Client.setChar(dataVal.char);
 
-            const keys = Object.keys(cursosData).map(key => ({ key }));
-            const cursosArray = Object.keys(cursosData).map(key => cursosData[key]);
-            CourseProgramming.setKeysCourse(keys);
-            CourseProgramming.setCursos(cursosArray);
-
-            const matriculasQuery = query(ref(db, '/aprendev/matriculas'), orderByChild('uid'), equalTo(Client.uid));
-            const matriculasSnapshot = await get(matriculasQuery);
-
-            if (matriculasSnapshot.exists()) {
-                const matriculasData = matriculasSnapshot.val() || {};
-                const matriculasArray = Object.keys(matriculasData).map(key => matriculasData[key]);
-                CourseProgramming.setMatriculas(matriculasArray);
-            }
+            Client.setIsUserLoggedIn(true);
             setLoadingCourses(false);
-            navigation.navigate("Main");
+            navigation.navigate('Main');
         } catch (error) {
             setLoadingCourses(false);
             console.error('Login error:', error);
@@ -74,7 +131,7 @@ const Login = () => {
     };
 
     return (
-        <SafeAreaView style={{ height: "100%" }}>
+        <SafeAreaView style={{ height: "100%", backgroundColor: "#E2E8F0" }}>
             {loadingCourses && (
                 <View style={styles.spinnerContainer}>
                     <GIFPlayer
@@ -112,18 +169,24 @@ const Login = () => {
                             secureTextEntry={true}
                             onChangeText={(text) => setPassword(text)}
                         />
-                        <View style={{ marginTop: 70, marginBottom: 20 }}>
-                            <TouchableOpacity style={styles.loginButton} onPress={() => loginUser()}>
-                                <Text style={styles.buttonText}>Entrar</Text>
+
+                        <TouchableOpacity onPress={() => { navigation.navigate('ForgotPassword') }} >
+                            <Text style={{ textAlign: "center", fontSize: 16, color: "#3B82F6", fontWeight: "700", paddingTop: 15, marginLeft: -230 }}>Esqueci a senha</Text>
+                        </TouchableOpacity>
+
+                        <View style={{ marginTop: 30, marginBottom: 20 }}>
+                            <TouchableOpacity style={styles.loginButton} onPress={loginUser}>
+                                <Text style={[styles.buttonText, { color: "#FFF" }]}>Entrar</Text>
                             </TouchableOpacity>
 
+                            <TouchableOpacity style={styles.googleButton} onPress={signInWithGoogle}>
+                                <Image style={{ width: 30, height: 30 }} source={require('../../../assets/google.png')} />
+                                <Text style={styles.buttonText}>Entrar com Google</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                    <TouchableOpacity onPress={goToForgotPassword} >
-                        <Text style={{ textAlign: "center", fontSize: 20 }}>Esqueci a senha</Text>
-                    </TouchableOpacity>
                     <TouchableOpacity onPress={goToRegister} style={{ marginTop: 8 }}>
-                        <Text style={{ textAlign: "center", fontSize: 20 }}>Cadastrar</Text>
+                        <Text style={{ textAlign: "center", fontSize: 25, color: "#3B82F6", fontWeight: "700" }}>Cadastrar</Text>
                     </TouchableOpacity>
                 </ScrollView>
             )}
@@ -132,6 +195,7 @@ const Login = () => {
 }
 
 export default Login;
+
 
 const styles = StyleSheet.create({
     spinnerContainer: {
@@ -143,11 +207,11 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: "rgba(0,0,0,1)",
+        backgroundColor: "#0F172A",
     },
     spinner: {
-        width: 100,
-        height: 100,
+        width: 150,
+        height: 150,
     },
     container: {
         flexDirection: 'row',
@@ -162,7 +226,7 @@ const styles = StyleSheet.create({
     },
     title: {
         textAlign: 'center',
-        fontSize: 24,
+        fontSize: 25,
         fontWeight: 'bold',
         marginTop: 20,
     },
@@ -187,32 +251,35 @@ const styles = StyleSheet.create({
         color: 'red',
     },
     input: {
+        height: 40,
+        borderColor: 'black',
         borderWidth: 1,
-        borderColor: '#000',
-        borderRadius: 5,
-        marginTop: 5,
         paddingHorizontal: 10,
-        fontSize: 16,
+        borderTopLeftRadius: 10,
     },
     loginButton: {
+        borderWidth: 2,
+        borderColor: "#3B82F6",
+        padding: 10,
         backgroundColor: "#3B82F6",
-        height: 35,
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 8,
         marginBottom: 8,
     },
     buttonText: {
-        fontSize: 18,
-        color: '#fff',
+        fontSize: 20,
+        color: '#000',
+        marginLeft: 8
     },
     googleButton: {
-        height: 35,
+        padding: 10,
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: "transparent",
         borderRadius: 8,
-        borderColor: "#EA4335",
-        borderWidth: 1,
+        borderColor: "#3B82F6",
+        borderWidth: 2.5,
         borderStyle: 'solid',
         flexDirection: "row",
     },

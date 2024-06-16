@@ -18,7 +18,10 @@ import { useNavigation } from '@react-navigation/native';
 export default Notification = observer(() => {
     const navigation = useNavigation();
     return (
-        <SafeAreaView>
+        <SafeAreaView style={{
+            height: "100%",
+            backgroundColor: "#E2E8F0"
+        }}>
             <Navbar />
             <ScrollView contentContainerStyle={{ marginHorizontal: 12, marginVertical: 20 }}>
                 <View style={{ flex: 1, flexDirection: "row" }}>
@@ -32,12 +35,12 @@ export default Notification = observer(() => {
                         </View>
                     </TouchableOpacity>
                     <View style={{ flex: 1, justifyContent: 'center', }}>
-                        <Text style={{ fontSize: 20 }}>Notificação</Text>
+                        <Text style={{ fontSize: 20 }}>Tela em construção</Text>
                     </View>
                 </View>
-                <View style={{ marginVertical: "5%", alignSelf: "center" }}>
-                    <Text style={{ textAlign: "center", fontSize: 20, marginBottom: 10 }}>Tela em construção!!!!!!!!</Text>
-                    <Text style={{ textAlign: "center", fontSize: 16 }}>Volte daqui um tempo quando tiver novas atualizações!!! LobITo Agradece</Text>
+                <View style={{ marginTop: "8%", marginBottom: "5%", alignSelf: "center" }}>
+                    <Text style={{ textAlign: "center", fontSize: 30, marginBottom: 10 }}>Tela em construção!</Text>
+                    <Text style={{ textAlign: "center", fontSize: 16 }}>Volte quando tiverermos novas atualizações!!! LobITo Agradece</Text>
                 </View>
                 <View style={{ alignItems: "center" }}>
                     <Image style={{ width: "98%", height: 450 }} source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/config-app.png?alt=media&token=0f8ccd9d-de75-43fc-aac6-aed6d728fcd7" }} />
