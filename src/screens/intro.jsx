@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Image, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, Button, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 import styles from './onboard/styles/style';
@@ -7,10 +7,9 @@ import { auth } from '../utils/firebase_config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const IntroScreen = () => {
     const navigation = useNavigation();
-    const colorScheme = useColorScheme();
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? "#1E293B" : "#e2e8f0", height: "100%" }}>
+        <View style={{ backgroundColor: "#e2e8f0", height: "100%" }}>
             <ScrollView>
                 <View style={{
                     flexDirection: 'row', // Isso alinha os botões horizontalmente

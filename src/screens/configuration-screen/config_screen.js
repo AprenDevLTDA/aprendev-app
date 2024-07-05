@@ -19,6 +19,7 @@ import { db } from '../../utils/firebase_config';
 import RouterApi from '../../utils/router_api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
+import ModalLobito from '../components/modal/modal';
 
 
 
@@ -28,6 +29,8 @@ const Chat = require('../../../assets/chat.png')
 
 export default ConfigScreen = observer(() => {
     const navigation = useNavigation();
+    const [showModal, setShowModal] = useState(false);
+
 
     const deleteProfile = async () => {
         const matriculasQuery = query(ref(db, '/aprendev/enrollments'), orderByChild('uid'), equalTo(Client.uid));
@@ -43,9 +46,11 @@ export default ConfigScreen = observer(() => {
         }
         await RouterApi.delete(`/aprendev/clients/${Client.uid}`);
         await AsyncStorage.removeItem("uid");
+
         CourseProgramming.logOff();
         Client.logOff();
         Client.setIsUserLoggedIn(false);
+        setShowModal(false);
         navigation.navigate("IntroScreen");
     }
     return (
@@ -55,6 +60,16 @@ export default ConfigScreen = observer(() => {
         }}>
             <Navbar />
             <ScrollView contentContainerStyle={{ marginHorizontal: 12 }}>
+                <ModalLobito
+                    btnName={"Sim, excluir conta"}
+                    titulo={"POXA, NÃO SE VÁ, APRENDEV! LobITo não quer que você vá embora! Tem certeza de que deseja excluir sua conta?"}
+                    imagem={"https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobitotristinho.png?alt=media&token=a284ca43-7e59-4bd8-9c9b-8dc41d0fdc46"}
+                    onClose={() => setShowModal(false)}
+                    onPress={() => deleteProfile()}
+                    visible={showModal}
+                    visibleCloseBottom={true}
+
+                />
                 <View style={{ flex: 1, flexDirection: "row", marginTop: 20 }}>
                     <TouchableOpacity onPress={() => {
                         CourseProgramming.setNivel(0);
@@ -103,7 +118,7 @@ export default ConfigScreen = observer(() => {
 
                     >
                     </PerfilButtonComponent>
-                    <TouchableOpacity onPress={() => deleteProfile()} style={{ marginTop: "70%" }}>
+                    <TouchableOpacity onPress={() => setShowModal(true)} style={{ marginTop: "70%" }}>
                         <Text style={{ color: "red", fontSize: 12 }}>
                             Excluir conta
                         </Text>

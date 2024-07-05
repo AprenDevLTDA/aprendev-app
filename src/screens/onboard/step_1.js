@@ -84,7 +84,7 @@ const Step1Screen = () => {
     };
 
     const validatePassword = () => {
-        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&])[A-Za-z\d@#$!%*?&]{8,}$/.test(password);
         if (password === "") {
             setErrorMessagePassword("Preencha sua senha");
         } else if (!strongPasswordRegex) {
@@ -224,19 +224,22 @@ const Step1Screen = () => {
             )}
             {!loadingCourses && (
                 <ScrollView>
-                    <View style={styles.container}>
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingHorizontal: 40,
+                        marginTop: 40,
+                    }}>
                         <TouchableOpacity onPress={() => { navigation.goBack() }}>
-                            <View style={{ paddingRight: 100, paddingTop: 40, paddingLeft: 20 }}>
+                            <View style={{ paddingRight: 20, paddingTop: 40, }}>
                                 <Icon name="arrow-back" size={30} color="#000" />
                             </View>
                         </TouchableOpacity>
-                        <View style={{ flex: 1, justifyContent: 'center', paddingTop: 40 }}>
-                            <Image style={styles.image} source={require('../../../assets/logo.png')} />
-                        </View>
                     </View>
                     <ModalLobito
                         visible={showModal}
-                        btnName={"Beleza LobITo"}
+                        btnName={"Beleza, LobITo"}
                         onClose={() => {
                             setShowModal(false)
                         }}

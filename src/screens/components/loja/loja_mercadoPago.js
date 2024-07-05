@@ -85,7 +85,7 @@ export default LojaMercadoPagoScreen = observer(() => {
 
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {CourseProgramming.modalVisible && (
-                    <ModalLobito onPress={() => CourseProgramming.setModalVisible(false)} visible={CourseProgramming.modalVisible} imagem={"https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/LobitoCoin.png?alt=media&token=3c116342-67fa-41c2-ad56-fd0605dc759c"} btnName={"Oba LobITo"} visibleCloseBottom={true} onClose={() => CourseProgramming.setModalVisible(false)} titulo={"Parabens"} />
+                    <ModalLobito onPress={() => CourseProgramming.setModalVisible(false)} visible={CourseProgramming.modalVisible} imagem={"https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/LobitoCoin.png?alt=media&token=3c116342-67fa-41c2-ad56-fd0605dc759c"} btnName={"Oba, LobITo!"} visibleCloseBottom={true} onClose={() => CourseProgramming.setModalVisible(false)} titulo={"Parabéns!"} />
                 )}
                 {CourseProgramming.modalVisibleError && (
                     <ModalLobito onPress={() => CourseProgramming.setModalVisible(false)} visible={CourseProgramming.modalVisibleError} imagem={"https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/mascotetriste.png?alt=media&token=ef78b123-8575-46b6-933e-9add64e1a56b"} btnName={"Tente novamente!"} visibleCloseBottom={true} onClose={() => CourseProgramming.setModalVisibleError(false)} titulo={"Não foi dessa vez"} />

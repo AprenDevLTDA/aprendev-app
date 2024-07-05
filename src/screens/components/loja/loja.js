@@ -170,26 +170,26 @@ export default LojaScreen = observer(() => {
                                         onPress={() =>
                                             Client.heart + element.quantity > 5 ?
                                                 showModal(
-                                                    "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881", "Beleza LobITo!", `Você não pode comprar mais nenhum pacote de Vida extra!, pois com esse pacote de ${element.quantity} vai dar o limite de Vida pra você`, () => setModalVisible(false)) : Client.heart === 5 ? showModal("https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881",
-                                                        "Beleza LobITo!",
-                                                        `Você não pode comprar mais nenhum pacote de Vida extra!, pois ja deu o limite de Vida pra você`,
+                                                    "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881", "Beleza, LobITo!", `Você não pode comprar esse pacote. Com ${element.quantity} Vidas, você vai estourar o limite`, () => setModalVisible(false)) : Client.heart === 5 ? showModal("https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881",
+                                                        "Beleza, LobITo!",
+                                                        `Você não pode comprar mais Vidas extras. Limite de Vidas atingido`,
                                                         () => setModalVisible(false)) :
                                                     Client.coins <= 0 ?
                                                         showModal(
                                                             "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito_triste.png?alt=media&token=87386c8f-84e2-4f4e-b7e3-e9088e343341",
                                                             "Comprar Moedas!",
-                                                            `Poxa! Você esta sem moedas!!, Compre mais clicando no botão logo abaixo!!`,
+                                                            `Vi que suas Moedas acabaram. Que tal comprar mais Moedinhas?`,
                                                             () => setModalVisible(false)) :
                                                         Client.coins >= element.points ?
                                                             showModal(
                                                                 element.imageSource,
-                                                                "Sim!!",
-                                                                `Você esta preste a comprar ${element.title}. Deseja Prosseguir?`,
+                                                                "Sim!",
+                                                                `Você está prestes a comprar ${element.title}. Deseja prosseguir?`,
                                                                 () => UpdateHeart(element.quantity, element.points)) :
                                                             showModal(
                                                                 "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito_aviso.png?alt=media&token=a87a3129-6ffa-4fd2-9213-308656eef1f8",
                                                                 "Comprar Moedas!",
-                                                                `Você não tem coins o sufuciente, você tem somente ${Client.coins} coins!, compre mais acessando o botão abaixo`,
+                                                                `Moedas insufucientes. Você tem somente ${Client.coins} Moedinhas! Compre mais Moedas em nossa Lojinha!`,
                                                                 () => setModalVisible(false))}
                                     >
                                         <View style={[styles.innerCardContent, styles.innercardGrande]}>

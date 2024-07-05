@@ -66,16 +66,40 @@ const CourseScreen = observer(() => {
         }]}>
             <Navbar />
             <ScrollView style={{ paddingBottom: 20 }}>
-                <View>
+                {CourseProgramming.matriculas.length > 0 && <View style={{ marginTop: "5%" }}>
                     <Text style={styles.title}>Meus Cursos</Text>
-                </View>
+                </View>}
                 {/* {loadingCourses ? (<SkeletonCourse />) : */}
+
+                {CourseProgramming.matriculas <= 0 && <>
+
+                    <View style={{ width: "90%", backgroundColor: "#F1F5F9", height: 95, borderRadius: 8, borderColor: "#3B82F6", borderWidth: 2, alignSelf: "center", paddingTop: 2, marginTop: "10%", height: 100 }}>
+                        <Text style={{ textAlign: "center", fontSize: 20, color: "#3B82F6", fontWeight: "600" }}>
+                            Ops...
+                        </Text>
+                        <Text style={{ marginHorizontal: 16, textAlign: "center", fontSize: 16 }}>
+                            Você ainda não se matriculou em nenhum curso
+                            Visite a Tela Inicial para conferir nossos cursos!
+                        </Text>
+                    </View>
+
+                    <View style={{ alignItems: "center", marginTop: 20 }}>
+                        <Image style={{ width: 220, height: 245 }} source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881" }} />
+                    </View>
+
+                    <TouchableOpacity onPress={() => navigation.navigate("Home")} style={{ borderRadius: 8, marginTop: 20, alignSelf: "center", width: 200, padding: 10, backgroundColor: "#3B82F6" }}>
+                        <View>
+                            <Text style={{ color: "white", textAlign: "center" }}>Ver os Cursos</Text>
+                        </View>
+                    </TouchableOpacity>
+                </>}
+
+
 
                 {CourseProgramming.cursos.map((element, index) => {
                     const key = CourseProgramming.keysCourse[index]?.key || "";
                     const matricula = CourseProgramming.matriculas.find(m => m.uid_course === key);
-
-                    if (matricula?.status === "em andamento") {
+                    if (matricula?.status === "em andamento" || matricula?.status === "concluido") {
                         return (
                             <View key={key}>
                                 <View style={customStyles.courseContainer}>
@@ -118,9 +142,8 @@ const CourseScreen = observer(() => {
                                 </View>
                             </View>
                         );
-                    } else {
-                        return null;
                     }
+
                 })}
 
             </ScrollView>

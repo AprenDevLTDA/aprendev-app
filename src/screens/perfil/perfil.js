@@ -63,7 +63,7 @@ export default Pefil = observer(() => {
 
     const handleChangeName = async (newName) => {
         const body = {
-            nome: newName
+            name: newName
         }
         await RouterApi.patch(`/aprendev/clients/${Client.uid}`, body)
         Client.setName(newName)
@@ -122,7 +122,7 @@ export default Pefil = observer(() => {
                             visibleCloseBottom={true}
                             width={150}
                             height={150}
-                            titulo="Alterar seu UserName"
+                            titulo="Alterar seu username"
                             btnName="Trocar"
                             imagem={`${Client.char}`}
                             visible={modalVisible}
@@ -139,11 +139,12 @@ export default Pefil = observer(() => {
                         sourceImage2={SetaLado}
                     >
 
-                        {CourseProgramming.cursos.map((element, index) => {
+                        {CourseProgramming.matriculas.length > 0 ? CourseProgramming.cursos.map((element, index) => {
                             const key = CourseProgramming.keysCourse[index]?.key || "";
                             const matricula = CourseProgramming.matriculas.find(m => m.uid_course === key);
 
-                            if (matricula?.status === "em andamento") {
+                            if (matricula?.status === "em andamento" || matricula?.status === "concluido") {
+
                                 // Calcula o total de aulas
                                 let totalAulas = 0;
                                 let totalNiveis = 0;
@@ -197,7 +198,7 @@ export default Pefil = observer(() => {
                             } else {
                                 return null;
                             }
-                        })}
+                        }) : (<><Text>Você ainda não tem nenenhum curso</Text></>)}
 
 
                     </PerfilButtonComponent>

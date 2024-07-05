@@ -15,16 +15,24 @@ import * as Google from "expo-auth-session/providers/google";
 import { generateHexStringAsync } from 'expo-auth-session';
 import CourseProgramming from '../store/course_programming';
 import ForgotPassword from '../login/forgotPassword'
+import ModalLobito from '../components/modal/modal';
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+
+    const [errorMessagePassword, setErrorMessagePassword] = useState('');
+    const [errorMessageEmail, setErrorMessageEmail] = useState('');
     const [loadingCourses, setLoadingCourses] = useState(false);
+    const [focusedInput, setFocusedInput] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showModal, setShowModal] = useState(false);
 
     const navigation = useNavigation();
 
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-        androidClientId: "282887853209-h1rkuipq212j8n1foda3r16g5fqkqome.apps.googleusercontent.com",
+        androidClientId: "282887853209-o2iia9kck6hbgij2595nccm1q8ehn34b.apps.googleusercontent.com",
         extraParams: {
             nonce: generateHexStringAsync(16),
         },
@@ -39,6 +47,7 @@ const Login = () => {
             Alert.alert('Erro', 'Falha na autenticação com Google.');
         }
     }
+
 
     useFocusEffect(
         React.useCallback(() => {
@@ -92,6 +101,50 @@ const Login = () => {
             handleGoogleSignIn();
         }, [response])
     );
+    useEffect(() => {
+        if (focusedInput === "email") validateEmail();
+    }, [email]);
+    useEffect(() => {
+        if (focusedInput === "password") validatePassword();
+
+    }, [password]);
+
+
+    const validatePassword = () => {
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&])[A-Za-z\d@#$!%*?&]{8,}$/.test(password);
+        if (password === "") {
+            setErrorMessagePassword("Preencha sua senha");
+        } else if (!strongPasswordRegex) {
+            setErrorMessagePassword("Sua senha não atende aos requisitos");
+        } else {
+            setErrorMessagePassword("");
+        }
+    };
+
+    const validateEmail = () => {
+        const strongEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (email === "") {
+            setErrorMessageEmail("Preencha seu email");
+        } else if (!strongEmailRegex) {
+            setErrorMessageEmail("Insira um email válido");
+        } else {
+            setErrorMessageEmail("");
+        }
+    };
+
+    const validate = () => {
+        validateEmail();
+        validatePassword();
+
+        if (errorMessageEmail || errorMessagePassword) {
+            setErrorMessage("Putz, parece que você não preencheu todos os campos corretamente.");
+            setShowModal(true);
+            return;
+        }
+
+        loginUser();
+    };
+
 
     const loginUser = async () => {
         try {
@@ -117,9 +170,17 @@ const Login = () => {
             navigation.navigate('Main');
         } catch (error) {
             setLoadingCourses(false);
-            console.error('Login error:', error);
-            Alert.alert('Erro', error.message);
+            console.log(error);
+            // Verificar o tipo de erro retornado pelo Firebase
+            setErrorMessage('Problema com a autenticação na base de dados!');
+            setShowModal(true);
+
         }
+
+    }
+
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
     };
 
     const goToForgotPassword = () => {
@@ -127,7 +188,7 @@ const Login = () => {
     };
 
     const goToRegister = () => {
-        // Navigate to registration screen
+        navigation.navigate("Step1Onboard")
     };
 
     return (
@@ -143,8 +204,21 @@ const Login = () => {
             )}
             {!loadingCourses && (
                 <ScrollView>
+                    <ModalLobito
+                        visible={showModal}
+                        btnName={"Beleza, LobITo"}
+                        onClose={() => {
+                            setShowModal(false)
+                        }}
+                        visibleCloseBottom={true}
+                        titulo={errorMessage}
+                        onPress={() => {
+                            setShowModal(false)
+                        }}
+                        imagem={"https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito_aviso.png?alt=media&token=a87a3129-6ffa-4fd2-9213-308656eef1f8"}
+                    />
                     <View style={styles.container}>
-                        <TouchableOpacity onPress={() => { navigation.navigate('IntroScreen') }}>
+                        <TouchableOpacity onPress={() => { navigation.goBack() }}>
                             <View style={{ paddingRight: 100, paddingTop: 40, paddingLeft: 20 }}>
                                 <Icon name="arrow-back" size={30} color="#000" />
                             </View>
@@ -161,21 +235,37 @@ const Login = () => {
                             placeholder="E-mail"
                             keyboardType="email-address"
                             onChangeText={(text) => setEmail(text)}
-                        />
-                        <Text style={styles.label}><Text style={styles.label_aster}>*</Text> Senha</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Senha"
-                            secureTextEntry={true}
-                            onChangeText={(text) => setPassword(text)}
-                        />
 
+                            onFocus={() => setFocusedInput('email')}
+                            onBlur={() => setFocusedInput(null)}
+                        />
+                        {errorMessageEmail !== '' && <Text style={{
+                            color: '#3B82F6',
+                            fontWeight: '700',
+                            marginTop: 5,
+                        }}>{errorMessageEmail}</Text>}
+                        <Text style={styles.label}><Text style={styles.label_aster}>*</Text> Senha</Text>
+                        <View style={[styles.input, { flexDirection: "row", alignItems: "center" }]}>
+                            <TextInput
+                                style={{ width: "92%" }} placeholder="Senha"
+                                passwordRules={true}
+                                secureTextEntry={!showPassword}
+                                onChangeText={setPassword}
+                                onFocus={() => setFocusedInput("password")}
+                                onBlur={() => setFocusedInput(null)} />
+                            <Icon name={!showPassword ? "visibility-off" : "visibility"} size={25} color={"#0F172A"} onPress={toggleShowPassword} />
+                        </View>
+                        {errorMessagePassword !== '' && <Text style={{
+                            color: '#3B82F6',
+                            fontWeight: '700',
+                            marginTop: 5,
+                        }}>{errorMessagePassword}</Text>}
                         <TouchableOpacity onPress={() => { navigation.navigate('ForgotPassword') }} >
-                            <Text style={{ textAlign: "center", fontSize: 16, color: "#3B82F6", fontWeight: "700", paddingTop: 15, marginLeft: -230 }}>Esqueci a senha</Text>
+                            <Text style={{ textAlign: "center", fontSize: 16, color: "#1E293B", fontWeight: "700", paddingTop: 15, marginLeft: -230 }}>Esqueci a senha</Text>
                         </TouchableOpacity>
 
                         <View style={{ marginTop: 30, marginBottom: 20 }}>
-                            <TouchableOpacity style={styles.loginButton} onPress={loginUser}>
+                            <TouchableOpacity style={styles.loginButton} onPress={validate}>
                                 <Text style={[styles.buttonText, { color: "#FFF" }]}>Entrar</Text>
                             </TouchableOpacity>
 

@@ -86,7 +86,7 @@ const Navbar = observer(() => {
                         <Text style={[styles.iconText, { fontSize: 10, fontWeight: "800", color: "#3B82F6", }]}>{Cliente.coins}</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={{ marginRight: 10, marginLeft: 8 }} onPress={() => showModal("https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/LobitoCoracao.png?alt=media&token=8f47f082-7975-4855-8118-fbc92746b438", "Ir para Loja", `Se quiser comprar mais Vidas, visite nossa Loja! Lá está repleto de Corações, aproveite!!! ❤️`, () => {
+                <TouchableOpacity style={{ marginRight: 10, marginLeft: 8 }} onPress={() => showModal("https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/LobitoCoracao.png?alt=media&token=8f47f082-7975-4855-8118-fbc92746b438", "Ir para Lojinha", `Se quiser comprar mais Vidas, visite nossa Lojinha! Ela está repleta de Corações, aproveite!!! ❤️`, () => {
                     setModalVisible(false)
                     navigation.navigate('Loja')
                 },)}>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Client from '../../store/cliente';
@@ -15,6 +15,7 @@ const NivelOne = observer(() => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState({});
     const [incorrectSelections, setIncorrectSelections] = useState([]); // Track incorrect selections
+    const scrollViewRef = useRef(null);
 
     const route = useRoute();
     const { data, name_curso, key, key_nivel } = route.params;
@@ -95,6 +96,8 @@ const NivelOne = observer(() => {
         );
     };
     const handleBadgeDesafioBOm = async () => {
+        await RouterApi.patch(`/aprendev/enrollments/${Client.hashMatricula}`, { status: "concluido" });
+
         showModal(
             "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/IMG-20240523-WA0032.jpg?alt=media&token=e9fbb469-677d-4beb-8fd2-4bf43e58ae0e",
             "Ir para o selo!",
@@ -112,6 +115,8 @@ const NivelOne = observer(() => {
             "Voltar para Meus Cursos!",
             `Essa não... Você não atingiu a nota necessária. \n\n Você acertou apenas ${10 * (Client.score / 1000)} de 10 questões`,
             async () => {
+                Client.setProgress("");
+                Client.setNivel(0);
                 setModalVisible(false);
                 navigation.navigate("Cursos")
             }
@@ -202,6 +207,7 @@ const NivelOne = observer(() => {
 
                 const result = 10 * (Client.score / 1000);
                 if (result >= 7) {
+
                     await handleBadgeDesafioBOm();
                     return;
 
@@ -310,6 +316,8 @@ const NivelOne = observer(() => {
         if (currentIndex < keys.length - 1) {
             setDataKeysCurrent(keys[currentIndex + 1]);
         }
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+
         setIncorrectSelections([]);
         setSelectedIndex(null);
 
@@ -351,6 +359,8 @@ const NivelOne = observer(() => {
         if (currentIndex < keys.length - 1) {
             setDataKeysCurrent(keys[currentIndex + 1]);
         }
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+
         setIncorrectSelections([]);
         setSelectedIndex(null);
 
@@ -482,7 +492,7 @@ const NivelOne = observer(() => {
                     </View>
                     <View style={{ height: "80%", marginTop: 8, padding: 16, marginBottom: "30%", borderRadius: 8 }}>
                         <View style={{ height: "90%", backgroundColor: "#CBD5E1", width: "100%", paddingTop: 20, padding: 16, borderRadius: 8 }}>
-                            <ScrollView showsVerticalScrollIndicator={false}>
+                            <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
                                 <View style={{
                                     flexDirection: 'row',
                                     justifyContent: 'center',
@@ -503,8 +513,52 @@ const NivelOne = observer(() => {
                                         {data[dataKeysCurrent].content[0]}
                                     </Text>
                                 ) : null}
-
-                                {dataKeysCurrent === "emblem" && <View style={{ alignItems: 'center', textAlign: "center" }}><Image style={{ width: 204, height: 200 }} source={{ uri: data[dataKeysCurrent] }} /></View>}
+                                {dataKeysCurrent === "emblem" && <View style={{ alignSelf: "center", marginBottom: "-8%", top: "-8%" }}>
+                                    <Text style={{ fontSize: 20, textAlign: "center", fontWeight: "500" }}>Parabens você chegou ao final desse nivel, Click no botão para resgar seu Selo</Text>
+                                </View>}
+                                {dataKeysCurrent === "emblem" && <View style={{ alignSelf: "center", height: 330 }}>
+                                    <ImageBackground
+                                        source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881" }}
+                                        style={{
+                                            width: 200,
+                                            height: 222,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <View
+                                            style={{
+                                                position: "absolute",
+                                                width: 175,
+                                                height: 170,
+                                                top: 155, // (222 - 150) / 2
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Image
+                                                source={{ uri: data[dataKeysCurrent] }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    resizeMode: 'contain',
+                                                }}
+                                            />
+                                            <Image
+                                                style={{
+                                                    position: 'absolute',
+                                                    width: 150,
+                                                    height: 150,
+                                                    resizeMode: 'contain',
+                                                    top: '-5%',
+                                                    left: '36%', // Ajuste conforme necessário para posicionar corretamente
+                                                    transform: [{ translateX: -50 }, { translateY: -50 }], // Centraliza a imagem dentro do View
+                                                }}
+                                                source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/M%C3%A3ozinha.png?alt=media&token=0f9da396-d416-4374-84e3-a195f7254426" }}
+                                            />
+                                        </View>
+                                    </ImageBackground>
+                                </View>}
 
 
 
@@ -567,7 +621,7 @@ const NivelOne = observer(() => {
                             </ScrollView>
                         </View>
                         <TouchableOpacity onPress={() => { nextKey() }} style={{ backgroundColor: "#042357", marginTop: 10, borderRadius: 8, padding: 20 }}>
-                            <Text style={{ color: "white", textAlign: "center", fontSize: 20 }}>{data[dataKeysCurrent].arrayAlternativas === undefined ? "Proximo" : "Responder"}</Text>
+                            <Text style={{ color: "white", textAlign: "center", fontSize: 20 }}>{dataKeysCurrent === "emblem" ? "FINALIZAR" : data[dataKeysCurrent].arrayAlternativas === undefined ? "PROXIMO" : "RESPONDER"}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

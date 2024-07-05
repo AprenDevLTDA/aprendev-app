@@ -95,7 +95,7 @@ const Home = observer(() => {
             <Navbar />
 
             <ScrollView ><View style={{ width: "90%", backgroundColor: "#F1F5F9", height: 95, borderRadius: 8, borderColor: "#3B82F6", borderWidth: 2, alignSelf: "center", marginTop: "10%" }}>
-                <Text style={{ textAlign: "center", fontSize: 20, marginVertical: 5 }}>
+                <Text style={{ textAlign: "center", fontSize: 20, marginVertical: 5, color: "#3B82F6", fontWeight: "600" }}>
                     Olá, caro AprenDev!!!
                 </Text>
                 <Text style={{ textAlign: "center", fontSize: 16 }}>
@@ -107,10 +107,11 @@ const Home = observer(() => {
                     <Image style={{ width: 220, height: 245 }} source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/lobito.png?alt=media&token=7838c7c8-578a-4164-b919-a80749c1a881" }} />
                 </View>
 
+                <Text style={{ marginLeft: 16, marginTop: 20, fontSize: 20, fontWeight: "700", color: "#3B82F6" }}>Conheça nossos cursos!</Text>
                 <View style={{
                     flexDirection: 'row',
                     justifyContent: 'center',
-                    marginTop: 20,
+                    marginTop: 8,
                     alignItems: "center",
                     alignSelf: "center"
                 }}>
@@ -132,11 +133,12 @@ const Home = observer(() => {
                                                 <Text style={{ textAlign: "center", fontSize: 16 }}>{element.course}</Text>
                                             </View>
                                             <View style={{ justifyContent: "center", marginVertical: 10 }}>
-                                                <Text style={{ textAlign: "center", fontSize: 12 }}>Aprenda conceitos basicos de logica de programação</Text>
+                                                <Text style={{ textAlign: "center", fontSize: 12 }}>{element.description}</Text>
                                             </View>
-                                            {matricula?.status === "em andamento" ? (
+                                            {matricula?.status === "em andamento" || matricula?.status === "concluido" ? (
                                                 <View style={{ padding: 10, justifyContent: "center", marginBottom: 20, width: "100%" }}>
-                                                    <Text style={{ color: "#3B82F6", textAlign: "center", fontSize: 16, fontWeight: "600" }}>EM ANDAMENTO</Text>
+                                                    <Text style={{ color: "#3B82F6", textAlign: "center", fontSize: 16, fontWeight: "600" }}>{matricula?.status}</Text>
+
                                                 </View>
                                             ) : (
                                                 <TouchableOpacity onPress={() => fetchUserDataCourse(key)} style={{ backgroundColor: "#3B82F6", padding: 10, justifyContent: "center", marginBottom: 20, width: "100%", borderRadius: 8 }}>

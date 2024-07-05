@@ -41,7 +41,7 @@ const Wrapper = observer(() => {
         name="Cursos"
         options={{
           headerShown: false,
-          tabBarLabel: 'Cursos',
+          tabBarLabel: 'Meus Cursos',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="book-sharp" color={color} size={size} />
           ),

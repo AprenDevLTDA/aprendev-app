@@ -12,7 +12,6 @@ const HeartWhite = require('../../../../assets/coracao_branco.png');
 const NivelOneView = observer(() => {
     const route = useRoute();
     const { data, name_curso, key, key_nivel } = route.params;
-    const [dataKeysCurrent, setDataKeysCurrent] = useState(Object.keys(data)[1]);
 
     const navigation = useNavigation();
 
@@ -62,31 +61,41 @@ const NivelOneView = observer(() => {
                                 }}>
                                     <View style={{ borderColor: "transparent", borderWidth: 1, backgroundColor: "#073b91", borderRadius: 8 }}>
                                         <View style={{ backgroundColor: "#CBD5E1", flexDirection: "row", flex: 1, width: 205, height: 35, margin: 1, borderRadius: 8, justifyContent: "center", alignItems: "center" }}>
-                                            <Text style={{ textAlign: "center", marginRight: 8 }}>{data.assunto}</Text>
+                                            <Text style={{ textAlign: "center", marginRight: 8 }}>{data.subject}</Text>
                                         </View>
                                     </View>
                                 </View>
+                                <Text style={{ fontWeight: '600', justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 24 }}>{data[key_nivel].title}</Text>
 
 
                                 {data[key_nivel].content !== undefined ? <>
-                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[key_nivel].title}</Text>
-                                    <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16 }}>{data[key_nivel].content[0]}</Text>
+                                    <Text style={{ fontSize: 20, justifyContent: "space-around", textAlign: "justify", marginBottom: 16 }}>{data[key_nivel].content[0]}</Text>
                                 </> : data[key_nivel].question !== undefined ? <>
-                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>{data[key_nivel].question}</Text>
+                                    <Text style={{ justifyContent: "center", textAlign: "center", marginBottom: 16, fontSize: 20 }}>Caro aprendev! Você não pode mais Visualizar os QUIZZES e os DESAFIOS</Text>
+                                    <Image style={{ alignSelf: "center", width: 224, height: 248 }} source={{ uri: "https://firebasestorage.googleapis.com/v0/b/apren-dev-fdb98.appspot.com/o/LobitoCinza.png?alt=media&token=35b1e5d6-9567-4360-9e53-9838fa08d44a" }} />
                                 </> : <></>}
-                                {data[key_nivel].images === undefined ? <></> : <View style={{ width: "100%", borderRadius: 8 }}>
-                                    <Image
-                                        source={{ uri: data[key_nivel].images[0] }}
-                                        style={{ width: "100%", height: 150, borderRadius: 8 }}
-                                    />
-                                </View>}
-                                {data[key_nivel].content === undefined ? <></> : <Text style={{ justifyContent: "space-around", textAlign: "justify", marginBottom: 16, marginTop: 16 }}>{data[key_nivel].content[1]}</Text>}
-                                {data[key_nivel].images === undefined ? <></> : <View style={styles.containerimg}>
-                                    <Image
-                                        source={{ uri: data[key_nivel].images[1] }}
-                                        style={{ width: "100%", height: 150, borderRadius: 8 }}
-                                    />
-                                </View>}
+
+
+
+                                {data[key_nivel].images?.length > 0 ? (
+                                    <View style={{ width: "100%", borderRadius: 8 }}>
+                                        <Image
+                                            source={{ uri: data[key_nivel].images[0] }}
+                                            style={{ width: "100%", height: 150, borderRadius: 8 }}
+                                        />
+                                    </View>
+                                ) : null}
+
+                                {data[key_nivel].content === undefined ? <></> : <Text style={{ fontSize: 20, justifyContent: "space-around", textAlign: "justify", marginBottom: 16, marginTop: 16 }}>{data[key_nivel].content[1]}</Text>}
+
+                                {data[key_nivel].images?.length > 0 ? (
+                                    <View style={{ width: "100%", borderRadius: 8 }}>
+                                        <Image
+                                            source={{ uri: data[key_nivel].images[1] }}
+                                            style={{ width: "100%", height: 150, borderRadius: 8 }}
+                                        />
+                                    </View>
+                                ) : null}
 
                                 {key_nivel === "emblem" && <View style={{ alignSelf: "center", height: 330 }}>
                                     <ImageBackground
